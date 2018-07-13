@@ -15,7 +15,7 @@ Prerequisities
 Usage
 -----
 
-- Install a cronjob for speedtest-cli, e.g. "12 */1 * * * /usr/bin/speedtest-cli --csv >> /whatever/speedtest-visualization/speedtest.csv"
-- Run script via python speedtest.py
+- Install a cronjob for speedtest-cli, e.g. `12 */1 * * * /usr/bin/speedtest-cli --csv >> /whatever/speedtest-visualization/speedtest.csv`
+- Run script via `python speedtest.py`
 - Display speedtest.html in Browser
 
