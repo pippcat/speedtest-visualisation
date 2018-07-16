@@ -1,35 +1,14 @@
 #!/usr/bin/env python
 
-'''
- _______     ______  
-|_   _\ \   / / ___| 
-  | |  \ \ / /\___ \ 
-  | |   \ V /  ___) |
-  |_|    \_/  |____/ 
-Teske Virtual System  
-Made by Lucas Teske 
-This script reads /proc/net/dev using tools.py to get the data.
-The average TX/RX Rates are calculated using an Low Pass Complementary Filter with k
-configured as AVG_LOW_PASS. Default to 0.2
-This should output something like this on your console:
-eth0: in B/S
-	RX - MAX: 0 AVG: 0 CUR: 0
-	TX - MAX: 0 AVG: 0 CUR: 0
-lo: in B/S
-	RX - MAX: 1972 AVG: 0 CUR: 0
-	TX - MAX: 1972 AVG: 0 CUR: 0
-wlan0: in B/S
-	RX - MAX: 167658 AVG: 490 CUR: 188
-	TX - MAX: 3648202 AVG: 386 CUR: 424
-vmnet1: in B/S
-	RX - MAX: 0 AVG: 0 CUR: 0
-	TX - MAX: 0 AVG: 0 CUR: 0
-'''
-
+import subprocess
+import json
+import threading
+import Queue
 import time
 from datetime import datetime
 import math
-INTERVAL = 10           #   1 second
+
+INTERVAL = 1         #   1 second
 AVG_LOW_PASS = 0.2      #   Simple Complemetary Filter
 FILENAME = "data.csv"   #   where to store data?
 
@@ -73,7 +52,15 @@ def GetNetworkInterfaces():
     #print ifaces
     return ifaces
 
-if __name__ == '__main__':     # Program start from here
+def speedtest(foo):
+    print "Starting speed test"
+    batcmd="/usr/bin/speedtest-cli --json"
+    result = subprocess.check_output(batcmd, shell=True)
+    database = json.loads(result)
+#    print json.dumps(database, indent=4, sort_keys=True)
+    return result
+
+def bandwidth(bla):
     print "Loading Network Interfaces"
     idata = GetNetworkInterfaces()
     print "Filling tables"
@@ -89,34 +76,48 @@ if __name__ == '__main__':     # Program start from here
             "recvbytes" :   eth["rx"]["bytes"]
         }
         
-    for i in range(2):
+    for i in range(30):
         idata = GetNetworkInterfaces()
         for eth in idata:
             #   Calculate the Rate
             ifaces[eth["interface"]]["rxrate"]      =   (eth["rx"]["bytes"] - ifaces[eth["interface"]]["recvbytes"]) / INTERVAL
             ifaces[eth["interface"]]["txrate"]      =   (eth["tx"]["bytes"] - ifaces[eth["interface"]]["sendbytes"]) / INTERVAL
-            
-            #   Set the rx/tx bytes
-            ifaces[eth["interface"]]["recvbytes"]   =   eth["rx"]["bytes"]
-            ifaces[eth["interface"]]["sendbytes"]   =   eth["tx"]["bytes"]
-            
-            #   Calculate the Average Rate
-            ifaces[eth["interface"]]["avgrx"]       =   int(ifaces[eth["interface"]]["rxrate"] * AVG_LOW_PASS + ifaces[eth["interface"]]["avgrx"] * (1.0-AVG_LOW_PASS))
-            ifaces[eth["interface"]]["avgtx"]       =   int(ifaces[eth["interface"]]["txrate"] * AVG_LOW_PASS + ifaces[eth["interface"]]["avgtx"] * (1.0-AVG_LOW_PASS))
-            
+        
             #   Set the Max Rates
             ifaces[eth["interface"]]["toprx"]       =   ifaces[eth["interface"]]["rxrate"] if ifaces[eth["interface"]]["rxrate"] > ifaces[eth["interface"]]["toprx"] else ifaces[eth["interface"]]["toprx"]
             ifaces[eth["interface"]]["toptx"]       =   ifaces[eth["interface"]]["txrate"] if ifaces[eth["interface"]]["txrate"] > ifaces[eth["interface"]]["toptx"] else ifaces[eth["interface"]]["toptx"]
             
-            print "%s: in B/S" %(eth["interface"])
-            print "\tRX - MAX: %s AVG: %s CUR: %s" %(ifaces[eth["interface"]]["toprx"],ifaces[eth["interface"]]["avgrx"],ifaces[eth["interface"]]["rxrate"])
-            print "\tTX - MAX: %s AVG: %s CUR: %s" %(ifaces[eth["interface"]]["toptx"],ifaces[eth["interface"]]["avgtx"],ifaces[eth["interface"]]["txrate"])
-            print ""
         time.sleep(INTERVAL)
-    print "\tRX - MAX: %s AVG: %s CUR: %s" %(ifaces["wlp3s0"]["toprx"],ifaces["wlp3s0"]["avgrx"],ifaces["wlp3s0"]["rxrate"])
-    file = open(FILENAME, "a+")
-    # datetime, intern, toprx, toptx, extern, toprx, toptx,
-    file.write(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ";intern;" + str(ifaces["wlp3s0"]["toprx"]) + ";" + str(ifaces["wlp3s0"]["toptx"]))
-    file.close()
+    result = {
+        "wlp3s0":{
+            "Download":str(float(ifaces["wlp3s0"]["toptx"])*8),
+            "Upload":str(ifaces["wlp3s0"]["toprx"]*8)
+        }
+    }
+    return result
+ 
 
-    
+
+que = Queue.Queue()
+thread_list = list()
+t = threading.Thread(target=lambda q, arg1: q.put(speedtest(arg1)), args=(que, 'bla'))
+# Sticks the thread in a list so that it remains accessible
+thread_list.append(t)
+t = threading.Thread(target=lambda q, arg1: q.put(bandwidth(arg1)), args=(que, 'bla'))
+thread_list.append(t)
+
+# Starts threads
+for thread in thread_list:
+    thread.start()
+
+# This blocks the calling thread until the thread whose join() method is called is terminated.
+# From http://docs.python.org/2/library/threading.html#thread-objects
+for thread in thread_list:
+    thread.join()
+
+# Demonstrates that the main process waited for threads to complete
+print "Done"
+# Check thread's return value
+while not que.empty():
+    result = que.get()
+    print result
