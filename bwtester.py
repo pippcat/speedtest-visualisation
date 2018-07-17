@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess
 import json
@@ -7,12 +7,18 @@ import Queue
 import time
 from datetime import datetime
 import math
+import speedtest
+import csv
+import sys
 
 INTERVAL = 1         #   1 second
 AVG_LOW_PASS = 0.2      #   Simple Complemetary Filter
 FILENAME = "data.csv"   #   where to store data?
+INTERNAL_NW = ""
+EXTERNAL_NW = "enp0s25"
 
 ifaces = {}
+result = []
 
 def GetNetworkInterfaces():
     ifaces = []
@@ -53,17 +59,21 @@ def GetNetworkInterfaces():
     return ifaces
 
 def speedtest(foo):
+    import speedtest
     print "Starting speed test"
-    batcmd="/usr/bin/speedtest-cli --json"
-    result = subprocess.check_output(batcmd, shell=True)
-    database = json.loads(result)
-#    print json.dumps(database, indent=4, sort_keys=True)
-    return result
+    time.sleep(5)
+    s = speedtest.Speedtest()
+    s.get_best_server()
+    s.download()
+    s.upload()
+    results_dict = s.results.dict()
+    print "Speedtest resultsr:"
+    print results_dict
+    return results_dict['timestamp'], results_dict['download']/1000000,  results_dict['upload']/1000000, results_dict['ping']
 
-def bandwidth(bla):
-    print "Loading Network Interfaces"
+def bandwidth(foo):
+    print "Starting Bandwidth measurement"
     idata = GetNetworkInterfaces()
-    print "Filling tables"
     for eth in idata:
         ifaces[eth["interface"]] = {
             "rxrate"    :   0,
@@ -76,7 +86,7 @@ def bandwidth(bla):
             "recvbytes" :   eth["rx"]["bytes"]
         }
         
-    for i in range(30):
+    for i in range(40):
         idata = GetNetworkInterfaces()
         for eth in idata:
             #   Calculate the Rate
@@ -88,13 +98,10 @@ def bandwidth(bla):
             ifaces[eth["interface"]]["toptx"]       =   ifaces[eth["interface"]]["txrate"] if ifaces[eth["interface"]]["txrate"] > ifaces[eth["interface"]]["toptx"] else ifaces[eth["interface"]]["toptx"]
             
         time.sleep(INTERVAL)
-    result = {
-        "wlp3s0":{
-            "Download":str(float(ifaces["wlp3s0"]["toptx"])*8),
-            "Upload":str(ifaces["wlp3s0"]["toprx"]*8)
-        }
-    }
-    return result
+    download = ifaces[EXTERNAL_NW]["toptx"]*8
+    upload = ifaces[EXTERNAL_NW]["toprx"]*8
+    print "Bandwidth measurement result: Download " + str(download) + "b/s; Upload " + str(upload) + "b/s"
+    return upload/1000000, upload/1000000
  
 
 
@@ -119,5 +126,14 @@ for thread in thread_list:
 print "Done"
 # Check thread's return value
 while not que.empty():
-    result = que.get()
-    print result
+    result += que.get()
+#print result
+# result = [Timestamp, Speedtest Download, Speedtest Upload, Speedtest Ping, All Download, All Upload]
+other_dl = result[4]-result[1]
+other_ul = result[5]-result[2]
+result.append(other_dl)
+result.append(other_ul)
+# result = [Timestamp, Speedtest Download, Speedtest Upload, Speedtest Ping, All Download, All Upload, Other Upload, Other Download]
+with open(FILENAME,'a') as fout:
+    writer = csv.writer(fout, delimiter = ';')
+    writer.writerow(result)
