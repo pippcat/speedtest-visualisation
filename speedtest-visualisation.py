@@ -21,7 +21,7 @@ SEPERATOR = ';'
 logger=pd.read_csv(FILENAME,sep=SEPERATOR,header=1,skipinitialspace=True)
 logger.columns=['datetime','ping','bw_dl','st_dl','other_dl','bw_ul','st_ul','other_ul'] # naming the columns
 # formatting the date/time in the right way to be displayed correctly
-logger['date_time'] = pd.to_datetime(logger.datetime.values, format="%Y-%m-%dT%H:%M:%S")
+logger['date_time'] = pd.to_datetime(logger.datetime.values, format="%Y-%m-%d %H:%M:%S")
 # tool tips need special treatment
 logger['ToolTipDates'] = logger.date_time.map(lambda x: x.strftime("%d.%m.%Y %H:%M:%S"))
 
@@ -35,9 +35,12 @@ p_dlspeed.title.text_font_size = "40px"
 # Format x-axis as datetime
 p_dlspeed.xaxis[0].formatter = DatetimeTickFormatter(days="%d.%m.%Y %H:%M:%S")
 # draw the lines
-p_dlspeed.x(source=mySource,x="date_time",y="st_dl",line_width=2,color="red",legend="Speedtest download speed")
-p_dlspeed.x(source=mySource,x="date_time",y="bw_dl",line_width=2,color="blue",legend="Interface download speed")
-p_dlspeed.x(source=mySource,x="date_time",y="other_dl",line_width=2,color="green",legend="Other download speed")
+p_dlspeed.x(source=mySource,x="date_time",y="st_dl",size=4,color="red",legend="Speedtest download speed")
+p_dlspeed.line(source=mySource,x="date_time",y="st_dl",line_width=2,color="red",legend="Speedtest download speed")
+p_dlspeed.x(source=mySource,x="date_time",y="bw_dl",size=4,color="blue",legend="Interface download speed")
+p_dlspeed.line(source=mySource,x="date_time",y="bw_dl",line_width=2,color="blue",legend="Speedtest download speed")
+p_dlspeed.x(source=mySource,x="date_time",y="other_dl",size=4,color="green",legend="Other download speed")
+p_dlspeed.line(source=mySource,x="date_time",y="other_dl",line_width=2,color="green",legend="Speedtest download speed")
 # add the legend
 p_dlspeed.legend.location = "bottom_left"
 
@@ -48,9 +51,12 @@ p_ulspeed.title.text_font_size = "40px"
 # Format x-axis as datetime
 p_ulspeed.xaxis[0].formatter = DatetimeTickFormatter(days="%d.%m.%Y %H:%M:%S")
 # draw the lines
-p_ulspeed.x(source=mySource,x="date_time",y="st_ul",line_width=4,color="red",legend="Speedtest upload speed")
-p_ulspeed.x(source=mySource,x="date_time",y="bw_ul",line_width=6,color="blue",legend="Interface upload speed")
-p_ulspeed.x(source=mySource,x="date_time",y="other_ul",line_width=2,color="green",legend="Other upload speed")
+p_ulspeed.x(source=mySource,x="date_time",y="st_ul",size=4,color="red",legend="Speedtest upload speed")
+p_ulspeed.line(source=mySource,x="date_time",y="st_ul",line_width=2,color="red",legend="Speedtest upload speed")
+p_ulspeed.x(source=mySource,x="date_time",y="bw_ul",size=4,color="blue",legend="Interface upload speed")
+p_ulspeed.line(source=mySource,x="date_time",y="bw_ul",line_width=2,color="blue",legend="Interface upload speed")
+p_ulspeed.x(source=mySource,x="date_time",y="other_ul",size=4,color="green",legend="Other upload speed")
+p_ulspeed.line(source=mySource,x="date_time",y="other_ul",line_width=2,color="green",legend="Other upload speed")
 # add the legend
 p_ulspeed.legend.location = "bottom_left"
 

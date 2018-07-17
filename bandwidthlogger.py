@@ -5,6 +5,7 @@ import threading
 import psutil
 import csv
 import time
+import os
 
 from datetime import datetime
 
@@ -90,3 +91,5 @@ print("Result :" + str(result))
 with open(filename,'a') as fout:
 	writer = csv.writer(fout, delimiter = ";")
 	writer.writerow(result)
+
+os.system("python3 speedtest-visualisation.py")
