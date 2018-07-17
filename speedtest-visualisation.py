@@ -19,7 +19,7 @@ SEPERATOR = ';'
 
 # import data for diagrams
 logger=pd.read_csv(FILENAME,sep=SEPERATOR,header=1,skipinitialspace=True)
-logger.columns=['datetime','st_dl','st_ul','ping','bw_dl','bw_ul','other_dl','other_ul'] # naming the columns
+logger.columns=['datetime','ping','bw_dl','st_dl','other_dl','bw_ul','st_ul','other_ul'] # naming the columns
 # formatting the date/time in the right way to be displayed correctly
 logger['date_time'] = pd.to_datetime(logger.datetime.values, format="%Y-%m-%dT%H:%M:%S")
 # tool tips need special treatment
