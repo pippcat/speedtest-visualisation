@@ -113,4 +113,4 @@ with open(filename,'a') as fout:
 	writer = csv.writer(fout, delimiter = ";")
 	writer.writerow(result)
 
-os.system("python3 /home/tommy/speedtest-visualisation/visualisation.py")
+os.system("python3 " + os.getcwd() + "/visualisation.py")
