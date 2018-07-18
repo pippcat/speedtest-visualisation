@@ -9,8 +9,7 @@ Those small python scripts are made to visualize the internal and external traff
 Prerequisities
 --------------
 
-- speedtest-cli
-- python3 including bokeh and pandas
+- `python3` including `bokeh`, `pandas`, `queue` and `speedtest-cli`
 
 Usage
 -----
