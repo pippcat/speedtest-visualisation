@@ -15,6 +15,6 @@ Usage
 -----
 
 - Run script via `python3 bandwidthlogger.py`
-- Or install a cronjob for speedtest-cli, e.g. `12 */1 * * * /usr/bin/python3 /path/to/script/bandwidthlogger.py >> /dev/null`
+- Or install a cronjob using `bandwidthlogger.sh`, e.g. `12 */1 * * * /path/to/script/bandwidthlogger.sh >> /dev/null`
 - Display speedtest.html in Browser
 
