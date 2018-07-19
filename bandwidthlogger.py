@@ -117,4 +117,4 @@ with open(filename,'a') as fout:
 	writer = csv.writer(fout, delimiter = ";")
 	writer.writerow(result)
 
-os.system("python3 " + os.getcwd() + "/visualisation.py") # and start the visualisation script to generate the html file
+os.system("python3 visualisation.py") # and start the visualisation script to generate the html file
