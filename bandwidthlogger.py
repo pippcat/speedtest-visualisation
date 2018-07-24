@@ -106,9 +106,13 @@ result.pop(3)
 result.insert(1, avg_ping)
 result.insert(4, result.pop(3))
 diff_dl = result[2] - result[3]
+if diff_dl < 0:
+	diff_dl = 0
 result.insert(4, diff_dl)
 result.insert(7, result.pop(8))
 diff_ul = result[6] - result[7]
+if diff_ul < 0:
+	diff_ul = 0
 result.insert(8,diff_ul)
 # structure result list: timestamp;avg_ping;external_DLa;external_DLs;external_DLo;internal_DLa;external_ULa;external_ULs;external_ULo;internal_ULa
 
