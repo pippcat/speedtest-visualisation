@@ -59,8 +59,8 @@ p_upload.xaxis[0].formatter = DatetimeTickFormatter(days="%d.%m.%Y %H:%M:%S")
 p_upload.vbar(source=mySource,x="date_time",top="bw_ul",bottom="st_ul",width=3600000,fill_color="darkblue",line_color="darkblue",legend="Interface upload speed")
 p_upload.vbar(source=mySource,x="date_time",top="st_ul",bottom="other_ul",width=3600000,fill_color="blue",line_color="blue",legend="Speedtest upload speed")
 p_upload.vbar(source=mySource,x="date_time",top="other_ul",bottom=0,width=3600000,fill_color="lightblue",line_color="lightblue",legend="Other upload speed")
-p_upload.add_tools( HoverTool(tooltips= [("date/time:","@ToolTipDates"),("interface upload:","@bw_ul"),("interface average upload:",str(st_ul_mean) + " Mb/s"),
-    ("speedtest upload:","@st_ul Mb/s"),("speedtest average upload:",str(st_ul_mean) + " Mb/s"),("other upload:","@other_ul Mb/s"),("other averagen upload:",str(st_ul_mean) + " Mb/s")]))
+p_upload.add_tools( HoverTool(tooltips= [("date/time:","@ToolTipDates"),("interface upload:","@bw_ul"),("interface average upload:",str(bw_ul_mean) + " Mb/s"),
+    ("speedtest upload:","@st_ul Mb/s"),("speedtest average upload:",str(st_ul_mean) + " Mb/s"),("other upload:","@other_ul Mb/s"),("other averagen upload:",str(other_ul_mean) + " Mb/s")]))
 p_upload.legend.location = "bottom_left"
 
 # Create the Internal LAN plot
