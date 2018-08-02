@@ -41,8 +41,12 @@ p_download.vbar(source=mySource,x="date_time",top="bw_dl",bottom="st_dl",width=3
 p_download.vbar(source=mySource,x="date_time",top="st_dl",bottom="other_dl",width=3600000,fill_color="red",line_color="red",legend="Speedtest download speed")
 p_download.vbar(source=mySource,x="date_time",top="other_dl",bottom=0,width=3600000,fill_color="salmon",line_color="salmon",legend="Other download speed")
 # add the tool tip
-p_download.add_tools( HoverTool(tooltips= [("date/time:","@ToolTipDates"),("interface download:","@bw_dl Mbit/s"),("interface average download:",str(bw_dl_mean) + " Mbit/s"),
-    ("speedtest download:","@st_dl Mb/s"),("speedtest average download:",str(st_dl_mean) + " Mb/s"),("other download:","@other_dl Mb/s"),("other average download:",str(other_dl_mean) + " Mb/s")]))
+p_download.add_tools( HoverTool(tooltips= [
+("date/time:","@ToolTipDates"),
+	("interface download:","@bw_dl (avg: " + str(int(bw_dl_mean)) + ") Mbit/s"),
+	("speedtest download:","@st_dl (avg: " + str(int(st_dl_mean)) + ") Mb/s"),
+	("other download:","@other_dl (avg: " + str(int(other_dl_mean)) + ") Mb/s")
+]))
 # add the legend
 p_download.legend.location = "bottom_left"
 
@@ -59,8 +63,12 @@ p_upload.xaxis[0].formatter = DatetimeTickFormatter(days="%d.%m.%Y %H:%M:%S")
 p_upload.vbar(source=mySource,x="date_time",top="bw_ul",bottom="st_ul",width=3600000,fill_color="darkblue",line_color="darkblue",legend="Interface upload speed")
 p_upload.vbar(source=mySource,x="date_time",top="st_ul",bottom="other_ul",width=3600000,fill_color="blue",line_color="blue",legend="Speedtest upload speed")
 p_upload.vbar(source=mySource,x="date_time",top="other_ul",bottom=0,width=3600000,fill_color="lightblue",line_color="lightblue",legend="Other upload speed")
-p_upload.add_tools( HoverTool(tooltips= [("date/time:","@ToolTipDates"),("interface upload:","@bw_ul"),("interface average upload:",str(bw_ul_mean) + " Mb/s"),
-    ("speedtest upload:","@st_ul Mb/s"),("speedtest average upload:",str(st_ul_mean) + " Mb/s"),("other upload:","@other_ul Mb/s"),("other averagen upload:",str(other_ul_mean) + " Mb/s")]))
+p_upload.add_tools( HoverTool(tooltips= [
+	("date/time:","@ToolTipDates"),
+	("interface upload:","@bw_ul (avg: " + str(int(bw_ul_mean)) + ") Mb/s"),
+    	("speedtest upload:","@st_ul (avg: " + str(int(st_ul_mean)) + ") Mb/s"),
+	("other upload:","@other_ul (avg: " + str(int(other_ul_mean)) + ") Mb/s")
+]))
 p_upload.legend.location = "bottom_left"
 
 # Create the Internal LAN plot
@@ -72,9 +80,11 @@ internal_dl_mean = logger['internal_dl'].mean()
 internal_ul_mean = logger['internal_ul'].mean()
 # Format x-axis as datetime
 p_internal.xaxis[0].formatter = DatetimeTickFormatter(days="%d.%m.%Y %H:%M:%S")
-p_internal.add_tools( HoverTool(tooltips= [("date/time:","@ToolTipDates"),("internal LAN to Server bandwidth usage:","@internal_dl Mb/s"),
-    ("average internal LAN to Server bandwidth usage:",str(internal_dl_mean) + " Mb/s"),("internal Server to LAN bandwidth usage:","@internal_ul Mb/s"),
-    ("average internal Server to LAN bandwidth usage:",str(internal_ul_mean) + " Mb/s")]))
+p_internal.add_tools( HoverTool(tooltips= [
+	("date/time:","@ToolTipDates"),
+	("internal Server to LAN bandwidth usage:","@internal_ul (avg: " + str(int(internal_ul_mean)) + ") Mb/s"),
+	("internal LAN to Server bandwidth usage:","@internal_dl (avg: " + str(int(internal_dl_mean)) + ") Mb/s")
+]))
 # draw the lines
 p_internal.triangle(source=mySource,x="date_time",y="internal_dl",color="red",size=5,legend="Internal LAN to Server bandwidth usage in Mb/s")
 #p_internal.line(source=mySource,x="date_time",y="internal_dl",color="red",line_width=2,legend="Internal LAN to Server bandwidth usage in Mb/s")
