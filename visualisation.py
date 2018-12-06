@@ -63,6 +63,8 @@ p_download.add_tools( HoverTool(tooltips= [
 # interval in seconds / unixtime; bokeh uses milliseconds
 p_download.x_range.start = (time.time()-INTERVAL)*1000
 p_download.x_range.end = time.time()*1000+7200
+p_download.y_range.start = 0
+p_download.y_range.end = 200
 
 #regression = np.polyfit(logger['date_time'].astype('int')*1000, logger['bw_dl'], 1)
 #r_x, r_y = zip(*((logger['date_time'], i*regression[0] + regression[1]) for i in range(len(logger))))
