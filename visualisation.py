@@ -96,6 +96,8 @@ p_upload.legend.location = "top_left"
 
 ## Create the Internal LAN plot
 p_internal = preparePlot("Internal")
+p_internal.title.text = "Internal bandwidth usage"
+p_internal.yaxis.axis_label = "Upload/Download speed in Mb/s"
 # calculating average values
 internal_dl_mean = logger['internal_dl'].mean()
 internal_ul_mean = logger['internal_ul'].mean()
@@ -108,6 +110,7 @@ p_internal.add_tools( HoverTool(tooltips= [
 p_internal.line(source=mySource,x="date_time",y="internal_dl",color="red",line_width=2,legend="Internal LAN to Server bandwidth usage in Mb/s")
 p_internal.line(source=mySource,x="date_time",y="internal_ul",color="blue",line_width=2,legend="Internal Server to LAN bandwidth usage in Mb/s")
 p_internal.x_range = p_download.x_range
+p_internal.legend.location = "top_left"
 
 ### Create the ping plot
 p_ping = preparePlot("Ping")
