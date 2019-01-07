@@ -47,8 +47,8 @@ logger['ToolTipDates'] = logger.date_time.map(lambda x: x.strftime("%d.%m.%Y %H:
 mySource = bp.ColumnDataSource(logger)
 
 ### Header and Footer
-footer = Div(text='''<p style="text-align:right;font-size:12px;font-style:italic;">Sourcecode can be found on <a href="https://www.github.com/pippcat/github/speedtest-visualisation">GitHub</a></p>''')
 header = Div(text='''<h1 style="text-align:center;font-size:40px;">'''+TITLE+'''</h1>''')
+footer = Div(text='''<p style="text-align:right;font-size:12px;font-style:italic;">Sourcecode can be found on <a href="https://www.github.com/pippcat/speedtest-visualisation" target="_blank">GitHub</a></p>''')
 
 ### Create the Download plot
 p_download = preparePlot("Download")
