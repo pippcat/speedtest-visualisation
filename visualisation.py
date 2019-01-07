@@ -2,36 +2,37 @@
 #-*- coding: utf-8 -*-
 
 # visualization of speedtest data
-# made by Tommy Schönherr (t.schoenherr@hzdr.de)
+# made by pippcat (sendyourspamhere@posteo.de)
 # public domain
 
-# import libraries
+### import libraries
 import pandas as pd # for CSV import
 import bokeh.plotting as bp
 from bokeh.layouts import column, widgetbox
-from bokeh.models import LinearAxis, Range1d, HoverTool, DatetimeTickFormatter, ColumnDataSource
-from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
+from bokeh.models import LinearAxis, Range1d, HoverTool, DatetimeTickFormatter, ColumnDataSource, Range
+from bokeh.models.widgets import DataTable, DateFormatter, TableColumn, Div
 from bokeh.models.glyphs import Line
 from bokeh.models.markers import X
 from datetime import datetime
 import numpy as np
 import time
 
+### common variables
 FILENAME = 'data.csv'
 SEPERATOR = ';'
 INTERVAL = 604800 # in seconds
-YMAX =  200
+TITLE = '2n40 Internet bandwidth visualisation'
 
+### common plot preparation function
 def preparePlot(name):
 	# Create the plot
 	plotname = "p_" + name
-	plotname = bp.figure(title="Internet "+name+" speed", width=1000, height=500, x_axis_type="datetime", x_axis_label="date/time", y_axis_label="Download speed in Mb/s")
+	plotname = bp.figure(width=3000, height=500, x_axis_type="datetime", x_axis_label="date/time", tools="xpan,xwheel_zoom,reset", active_scroll="xwheel_zoom")
+	plotname.sizing_mode='scale_width'
 	# formatting the title
-	plotname.title.text_font_size = "40px"
+	plotname.title.text_font_size = "30px"
 	# Format x-axis as datetime
 	plotname.xaxis[0].formatter = DatetimeTickFormatter(days="%d.%m.%Y %H:%M:%S")
-	# add the legend
-	plotname.legend.location = "top_left"
 	return plotname
 
 ### Data preparation
@@ -45,8 +46,14 @@ logger['ToolTipDates'] = logger.date_time.map(lambda x: x.strftime("%d.%m.%Y %H:
 # Create a ColumnDataSource object
 mySource = bp.ColumnDataSource(logger)
 
+### Header and Footer
+footer = Div(text='''<p style="text-align:right;font-size:12px;font-style:italic;">Sourcecode can be found on <a href="https://www.github.com/pippcat/github/speedtest-visualisation">GitHub</a></p>''')
+header = Div(text='''<h1 style="text-align:center;font-size:40px;">'''+TITLE+'''</h1>''')
+
 ### Create the Download plot
 p_download = preparePlot("Download")
+p_download.title.text = "Download speed"
+p_download.yaxis.axis_label = "Download speed in Mb/s"
 # calculating average values
 bw_dl_mean = logger['bw_dl'].mean()
 st_dl_mean = logger['st_dl'].mean()
@@ -64,15 +71,12 @@ p_download.add_tools( HoverTool(tooltips= [
 # interval in seconds / unixtime; bokeh uses milliseconds
 p_download.x_range.start = (time.time()-INTERVAL)*1000
 p_download.x_range.end = time.time()*1000+7200
-p_download.y_range.start = 0
-p_download.y_range.end = YMAX
-
-#regression = np.polyfit(logger['date_time'].astype('int')*1000, logger['bw_dl'], 1)
-#r_x, r_y = zip(*((logger['date_time'], i*regression[0] + regression[1]) for i in range(len(logger))))
-#p_download.line(r_x, r_y, color="black")
+p_download.legend.location = "top_left"
 
 ### Create the Upload plot
 p_upload = preparePlot("Upload")
+p_upload.title.text = "Upload speed"
+p_upload.yaxis.axis_label = "Upload speed in Mb/s"
 # calculating average values
 bw_ul_mean = logger['bw_ul'].mean()
 st_ul_mean = logger['st_ul'].mean()
@@ -88,38 +92,36 @@ p_upload.add_tools( HoverTool(tooltips= [
 	("other upload:","@other_ul (avg: " + str(int(other_ul_mean)) + ") Mb/s")
 ]))
 p_upload.x_range = p_download.x_range
-p_upload.y_range = p_download.y_range
+p_upload.legend.location = "top_left"
 
-### Create the Internal LAN plot
+## Create the Internal LAN plot
 p_internal = preparePlot("Internal")
 # calculating average values
 internal_dl_mean = logger['internal_dl'].mean()
 internal_ul_mean = logger['internal_ul'].mean()
-# add tool tip
+
 p_internal.add_tools( HoverTool(tooltips= [
 	("date/time:","@ToolTipDates"),
 	("internal Server to LAN bandwidth usage:","@internal_ul (avg: " + str(int(internal_ul_mean)) + ") Mb/s"),
 	("internal LAN to Server bandwidth usage:","@internal_dl (avg: " + str(int(internal_dl_mean)) + ") Mb/s")
 ]))
-# draw the lines
-#p_internal.vbar(source=mySource,x="date_time",y="internal_dl",color="red",size=5,legend="Internal LAN to Server bandwidth usage in Mb/s")
-#p_internal.vbar(source=mySource,x="date_time",y="internal_ul",color="blue",size=5,legend="Internal Server to LAN bandwidth usage in Mb/s")
 p_internal.line(source=mySource,x="date_time",y="internal_dl",color="red",line_width=2,legend="Internal LAN to Server bandwidth usage in Mb/s")
 p_internal.line(source=mySource,x="date_time",y="internal_ul",color="blue",line_width=2,legend="Internal Server to LAN bandwidth usage in Mb/s")
 p_internal.x_range = p_download.x_range
-p_internal.y_range = p_download.y_range
 
 ### Create the ping plot
 p_ping = preparePlot("Ping")
+p_ping.title.text = "Ping"
+p_ping.yaxis.axis_label = "Ping in ms"
 # calculate average ping
 ping_mean = logger['ping'].mean()
 # draw the line
 p_ping.vbar(source=mySource,x="date_time",top="ping",bottom=0,width=3600000,fill_color="darkgreen",line_color="darkgreen",legend="Ping in ms")
 p_ping.add_tools( HoverTool(tooltips= [("date/time:","@ToolTipDates"),("Ping:","@ping ms"),("Avg. ping:",str(ping_mean) + " ms")]))
 p_ping.x_range = p_download.x_range
-p_ping.y_range = p_download.y_range
+p_ping.legend.location = "top_left"
 
-### output to line.html
-bp.output_file("speedtest.html", title="Internet / LAN bandwidth visualisation") #put output_notebook() for notebook
-# show result in browser
-bp.save(column(p_download, p_upload, p_internal, p_ping))
+### output to HTML file
+bp.output_file("speedtest.html", title=TITLE) #put output_notebook() for notebook
+page = column(children=[header,p_download, p_upload, p_ping, p_internal, footer], sizing_mode='scale_width')
+bp.save(page)
