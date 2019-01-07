@@ -70,7 +70,7 @@ p_download.add_tools( HoverTool(tooltips= [
 ]))
 # interval in seconds / unixtime; bokeh uses milliseconds
 p_download.x_range.start = (time.time()-INTERVAL)*1000
-p_download.x_range.end = time.time()*1000+7200
+p_download.x_range.end = (time.time()+7200)*1000
 p_download.legend.location = "top_left"
 
 ### Create the Upload plot
