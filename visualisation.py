@@ -94,6 +94,7 @@ p_upload.add_tools( HoverTool(tooltips= [
 	("other upload:","@other_ul (avg: " + str(int(other_ul_mean)) + ") Mb/s")
 ]))
 p_upload.x_range = p_download.x_range
+p_upload.y_range.end = 60
 p_upload.legend.location = "top_left"
 
 ## Create the Internal LAN plot
@@ -124,6 +125,7 @@ ping_mean = logger['ping'].mean()
 p_ping.vbar(source=mySource,x="date_time",top="ping",bottom=0,width=3600000,fill_color="lime",line_color="darkgreen",legend="Ping in ms")
 p_ping.add_tools( HoverTool(tooltips= [("date/time:","@ToolTipDates"),("Ping:","@ping ms"),("Avg. ping:",str(ping_mean) + " ms")]))
 p_ping.x_range = p_download.x_range
+p_ping.y_range.end = 200
 p_ping.legend.location = "top_left"
 
 ### output to HTML file
