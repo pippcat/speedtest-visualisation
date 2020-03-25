@@ -6,6 +6,7 @@ import psutil
 import csv
 import time
 import os
+import speedtest
 
 from datetime import datetime
 
@@ -15,59 +16,57 @@ external = "eth0" # name of network interface connected to the internet
 internal = "eth1" # name of network interface connected to the LAN
 
 def bw(direction): # function to measure bandwidth usage
-	interval = 2 # measurement interval
-	time.sleep(10) # to make sure speedtest already started
+	interval = 3 # measurement interval
+	time.sleep(3) # to make sure speedtest already started
+	print(str(datetime.now()) + ": start bandwidth measurement.")
 	before = psutil.net_io_counters(pernic=True)
 	external_before = before[external]
 	internal_before = before[internal]
-	external_rv_before = external_before[1]
-	external_tx_before = external_before[0]
-	internal_rv_before = internal_before[1]
-	internal_tx_before = internal_before[0]
 
 	time.sleep(interval)
 
 	after = psutil.net_io_counters(pernic=True)
 	external_after = after[external]
 	internal_after = after[internal]
-	external_rv_after = external_after[1]
-	external_tx_after = external_after[0]
-	internal_rv_after = internal_after[1]
-	internal_tx_after = internal_after[0]
 	if direction=="dl":
-		external_rv_per_sec = (external_rv_after - external_rv_before) / interval / 1000000 * 8
-		internal_rv_per_sec = (internal_rv_after - internal_rv_before) / interval / 1000000 * 8
-		print("BW DL test done. external_rv_per_sec = " + str(external_rv_per_sec) + "; internal_rv_per_sec = " + str(internal_rv_per_sec))
+		external_rv_per_sec = (external_after[1] - external_before[1]) / interval / 1000000 * 8
+		internal_rv_per_sec = (internal_after[1] - internal_before[1]) / interval / 1000000 * 8
+		print(str(datetime.now()) + ": bandwidth measurement (download) done. external_rv_per_sec = " + str(external_rv_per_sec) + "; internal_rv_per_sec = " + str(internal_rv_per_sec))
 		return [external_rv_per_sec, internal_rv_per_sec]
 	elif direction=="ul":
-		external_tx_per_sec = (external_tx_after - external_tx_before) / interval / 1000000 * 8
-		internal_tx_per_sec = (internal_tx_after - internal_tx_before) / interval / 1000000 * 8
-		print("BW UL test done. external_tx_per_sec = " + str(external_tx_per_sec) + "; internal_tx_per_sec = " + str(internal_tx_per_sec))
+		external_tx_per_sec = (external_after[0] - external_before[0]) / interval / 1000000 * 8
+		internal_tx_per_sec = (internal_after[0] - internal_before[0]) / interval / 1000000 * 8
+		print(str(datetime.now()) + ": bandwidth measurement (upload) done. external_tx_per_sec = " + str(external_tx_per_sec) + "; internal_tx_per_sec = " + str(internal_tx_per_sec))
 		return [external_tx_per_sec, internal_tx_per_sec]
 
-def speedtest(direction): # does the speed test to use the full external network bandwidth
-	import speedtest
-	s = speedtest.Speedtest()
-	s.get_best_server()
+def speedtestf(direction, s): # does the speed test to use the full external network bandwidth
+#	import speedtest
+#	s = speedtest.Speedtest()
+#	s.get_best_server()
 	if direction=="dl":
+		print(str(datetime.now()) + ": start download speedtest")
 		s.download()
 	elif direction=="ul":
+		print(str(datetime.now()) + ": start upload speedtest")
 		s.upload()
 	else:
 		print("error")
 	results_dict = s.results.dict()
 	if direction=="dl":
-		print("Speedtest DL test done. ping = " + str(results_dict['ping']) + "ms; external DL speed = " + str(results_dict['download']/1000000))
+		print(str(datetime.now()) + ": download speedtest done. ping = " + str(results_dict['ping']) + "ms; external DL speed = " + str(results_dict['download']/1000000))
 		return [results_dict['ping'], results_dict['download']/1000000]
 	elif direction=="ul":
-		print("Speedtest UL test done. ping = " + str(results_dict['ping']) + "ms; external UL speed = " + str(results_dict['upload']/1000000))
+		print(str(datetime.now()) + ": upload speedtest done. ping = " + str(results_dict['ping']) + "ms; external UL speed = " + str(results_dict['upload']/1000000))
 		return [results_dict['ping'], results_dict['upload']/1000000]
 
+import speedtest
+s = speedtest.Speedtest()
+s.get_best_server()
 # we have to use multitasking to do the bandwidth measurement during the speed test
 que = queue.Queue() # the queue collects the results of the different threads
 dl_thread_list = list() # two different thread lists to be able to do things sequentially
 ul_thread_list = list()
-dl = threading.Thread(target=lambda q, arg1: q.put(speedtest(arg1)), args=(que, 'dl'))
+dl = threading.Thread(target=lambda q, arg1, arg2: q.put(speedtestf(arg1, arg2)), args=(que, 'dl', s))
 dl_thread_list.append(dl)
 dl = threading.Thread(target=lambda q, arg1: q.put(bw(arg1)), args=(que, 'dl'))
 dl_thread_list.append(dl)
@@ -84,7 +83,7 @@ while not que.empty():
 	result.extend(que.get()) # append results to result list
 
 # same thing, this time for upload:
-ul = threading.Thread(target=lambda q, arg1: q.put(speedtest(arg1)), args=(que, 'ul'))
+ul = threading.Thread(target=lambda q, arg1, arg2: q.put(speedtestf(arg1, arg2)), args=(que, 'ul', s))
 ul_thread_list.append(ul)
 ul = threading.Thread(target=lambda q, arg1: q.put(bw(arg1)), args=(que, 'ul'))
 ul_thread_list.append(ul)
